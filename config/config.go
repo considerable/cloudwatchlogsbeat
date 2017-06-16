@@ -2,6 +2,12 @@ package config
 
 import "time"
 
+const (
+	S3StreamStateStorage       = "s3"
+	SqliteStreamStateStorage   = "sqlite"
+	InMemoryStreamStateStorage = "in-memory"
+)
+
 type Multiline struct {
 	Pattern string
 	Negate  bool
@@ -19,7 +25,8 @@ type Config struct {
 	GroupRefreshPeriod  time.Duration `config:"group_refresh_period"`
 	StreamRefreshPeriod time.Duration `config:"stream_refresh_period"`
 	GroupNames          []string      `config:"groupnames"`
-	DynamoDBTableName   string        `config:"dynamodb_table_name"`
+	StreamStateStorage  string        `config:"stream_state_storage"`
+	SqliteFilePath      string        `config:"sqlite_file_path"`
 	S3BucketName        string        `config:"s3_bucket_name"`
 	AWSRegion           string        `config:"aws_region"`
 	Prospectors         []Prospector  `config:"prospectors"`

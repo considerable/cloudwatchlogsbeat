@@ -8,8 +8,12 @@ name: cloudwatchlogsbeat
 cloudwatchlogsbeat:
   # Defines how often the manager will refresh its list of monitored log groups
   group_refresh_period: 1s
+  # stream state storage (options: sqlite, s3, in-memory) default: sqlite
+  stream_state_storage: sqlite
   # the bucket in which log streams save their state
   s3_bucket_name: the-bucket-name
+  # the path to the sqlite file
+  sqlite_file_path: ./cloudwatchlogsbeat.db
   # defines how often a log group will refresh its list of monitored streams
   stream_refresh_period: 5s
   # defines AWS region (default: eu-west-1)
@@ -125,6 +129,30 @@ output.elasticsearch:
   #username: "elastic"
   #password: "changeme"
 
+  # A template is used to set the mapping in Elasticsearch
+  # By default template loading is enabled and the template is loaded.
+  # These settings can be adjusted to load your own template or overwrite existing ones.
+
+  # Set to true to enable template loading.
+  template.enabled: false
+
+  # Template name. By default the template name is cloudwatchlogsbeat.
+  #template.name: "cloudwatchlogsbeat"
+
+  # Path to template file
+  #template.path: "${path.config}/cloudwatchlogsbeat.template.json"
+
+  # Overwrite existing template
+  template.overwrite: true
+
+  # If set to true, cloudwatchlogsbeat checks the Elasticsearch version at connect time, and if it
+  # is 2.x, it loads the file specified by the template.versions.2x.path setting. The
+  # default is true.
+  #template.versions.2x.enabled: true
+
+  # Path to the Elasticsearch 2.x version of the template file.
+  #template.versions.2x.path: "${path.config}/cloudwatchlogsbeat.template-es2x.json"
+
   # Dictionary of HTTP parameters to pass within the url with index operations.
   #parameters:
     #param1: value1
@@ -162,30 +190,6 @@ output.elasticsearch:
   # If `bulk_max_size` is reached before this interval expires, addition bulk index
   # requests are made.
   #flush_interval: 1s
-
-  # A template is used to set the mapping in Elasticsearch
-  # By default template loading is enabled and the template is loaded.
-  # These settings can be adjusted to load your own template or overwrite existing ones.
-
-  # Set to false to disable template loading.
-  #template.enabled: true
-
-  # Template name. By default the template name is cloudwatchlogsbeat.
-  #template.name: "cloudwatchlogsbeat"
-
-  # Path to template file
-  #template.path: "${path.config}/cloudwatchlogsbeat.template.json"
-
-  # Overwrite existing template
-  template.overwrite: true
-
-  # If set to true, cloudwatchlogsbeat checks the Elasticsearch version at connect time, and if it
-  # is 2.x, it loads the file specified by the template.versions.2x.path setting. The
-  # default is true.
-  #template.versions.2x.enabled: true
-
-  # Path to the Elasticsearch 2.x version of the template file.
-  #template.versions.2x.path: "${path.config}/cloudwatchlogsbeat.template-es2x.json"
 
   # Use SSL settings for HTTPS. Default is true.
   #ssl.enabled: true

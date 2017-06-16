@@ -101,7 +101,3 @@ func (registry *S3Registry) WriteStreamInfo(stream *Stream) error {
 	}
 	return err
 }
-
-func generateKey(stream *Stream) string {
-	return fmt.Sprintf("%v/%v", stream.Group.Name, stream.Name)
-}

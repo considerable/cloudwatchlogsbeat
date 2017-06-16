@@ -1,6 +1,7 @@
 package beater
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -46,30 +47,52 @@ type Cloudwatchlogsbeat struct {
 // Creates a new cloudwatchlogsbeat
 func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	// Read configuration
-	config := config.Config{}
-	if err := cfg.Unpack(&config); err != nil {
+	configuration := config.Config{}
+	if err := cfg.Unpack(&configuration); err != nil {
 		return nil, fmt.Errorf("Error reading config file: %v", err)
 	}
 
 	// Create AWS session
-	if config.AWSRegion == "" {
-		config.AWSRegion = "eu-west-1"
+	if configuration.AWSRegion == "" {
+		configuration.AWSRegion = "eu-west-1"
 	}
 	sess := session.Must(session.NewSession(&aws.Config{
 		Retryer: client.DefaultRetryer{NumMaxRetries: 10},
-		Region:  aws.String(config.AWSRegion),
+		Region:  aws.String(configuration.AWSRegion),
 	}))
 
 	// Create cloudwatch session
 	svc := cloudwatchlogs.New(sess)
 
 	// Create beat registry
-	registry := NewS3Registry(s3.New(sess), config.S3BucketName)
+	var registry Registry
+	if configuration.StreamStateStorage == "" {
+		configuration.StreamStateStorage = config.InMemoryStreamStateStorage
+	}
+	switch configuration.StreamStateStorage {
+	case config.S3StreamStateStorage:
+		if configuration.S3BucketName == "" {
+			Fatal(errors.New(fmt.Sprintf("Please specify an s3 bucket for the requested registry")))
+		}
+		logp.Info("Using S3 Registry for state persistence.")
+		registry = NewS3Registry(s3.New(sess), configuration.S3BucketName)
+	case config.SqliteStreamStateStorage:
+		if configuration.SqliteFilePath == "" {
+			Fatal(errors.New(fmt.Sprintf("Please specify the path to the sqlite DB for the requested registry")))
+		}
+		logp.Info("Using sqlite registry for state persistence.")
+		registry = NewSqliteRegistry(configuration.SqliteFilePath)
+	case config.InMemoryStreamStateStorage:
+		logp.Info("Using Dummy Registry. No state will be persisted.")
+		registry = &DummyRegistry{}
+	default:
+		Fatal(errors.New(fmt.Sprintf("Invalid stream state storage: %s", configuration.StreamStateStorage)))
+	}
 
 	// Create instance
 	beat := &Cloudwatchlogsbeat{
 		Done:      make(chan struct{}),
-		Config:    config,
+		Config:    configuration,
 		Session:   sess,
 		AWSClient: svc,
 		Registry:  registry,
