@@ -1,5 +1,5 @@
-hash: a2d61b0d710351be03c839d97adabf4ee794fcafe73d237fe4511832d524f29c
-updated: 2017-06-12T16:36:24.841940513+03:00
+hash: 63ba8a97f897da41640f29c00055e9e9a733ab8fb3a94cb45906ab1a318476ab
+updated: 2017-06-18T00:04:24.016717734+03:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 512bdaf8bec30abd545b440447cebb57b53d3af9
@@ -31,7 +31,6 @@ imports:
   - private/protocol/xml/xmlutil
   - service/cloudwatchlogs
   - service/cloudwatchlogs/cloudwatchlogsiface
-  - service/dynamodb
   - service/s3
   - service/s3/s3iface
   - service/sts
@@ -127,6 +126,8 @@ imports:
   version: 09cded8978dc9e80714c4d85b0322337b0a1e5e0
 - name: github.com/klauspost/crc32
   version: 19b0b332c9e4516a6370a0456e6182c3b5036720
+- name: github.com/mattn/go-sqlite3
+  version: ca5e3819723d8eeaf170ad510e7da1d6d2e94a08
 - name: github.com/mitchellh/hashstructure
   version: b098c52ef6beab8cd82bc4a32422cf54b890e8fa
 - name: github.com/nranchev/go-libGeoIP
@@ -150,9 +151,12 @@ imports:
   repo: https://github.com/urso/sarama
 - name: github.com/stretchr/testify
   version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - assert
 - name: golang.org/x/net
   version: d58ca6618b994150e624f6888d871f4709db51a0
   subpackages:
+  - context
   - icmp
   - ipv4
   - ipv6
@@ -166,4 +170,8 @@ imports:
   - windows/svc/debug
 - name: gopkg.in/yaml.v2
   version: a83829b6f1293c91addabc89d0571c246397bbf4
-testImports: []
+testImports:
+- name: github.com/pmezard/go-difflib
+  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  subpackages:
+  - difflib
