@@ -33,7 +33,7 @@ func (registry *SqliteRegistry) ReadStreamInfo(stream *Stream) error {
 	key := generateKey(stream)
 	defer func() {
 		if err != nil {
-			logp.Warn(fmt.Sprintf("sqlite: failed to write key=%s [message=%s]", key, err.Error()))
+			logp.Warn(fmt.Sprintf("sqlite: failed to read key=%s [message=%s]", key, err.Error()))
 		}
 	}()
 
@@ -58,21 +58,25 @@ func (registry *SqliteRegistry) WriteStreamInfo(stream *Stream) error {
 	key := generateKey(stream)
 	buf := stream.Buffer.String()
 	nextToken := *stream.Params.NextToken
-
-	_, err := registry.db.Exec("INSERT OR REPLACE INTO ? (Key,Buffer,NextToken) VALUES(?,?,?)",
-		databaseName, key, buf, nextToken)
+	statement :=
+		fmt.Sprintf("INSERT OR REPLACE INTO %s (Key,Buffer,NextToken) VALUES(?,?,?)",
+			databaseName)
+	_, err := registry.db.Exec(statement, key, buf, nextToken)
 	if err != nil {
-		logp.Warn(fmt.Sprintf("sqlite: failed to write key=%s [message=%s]", key, err.Error()))
+		logp.Warn(fmt.Sprintf("sqlite: failed to write key=%s [message=%s]",
+			key, err.Error()))
 	}
 	return err
 }
 
 func (registry *SqliteRegistry) createDbIfNecessary() {
-	_, err := registry.db.Exec(fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s
-  (Key VARCHAR(1024) NOT NULL,
-   Buffer TEXT,
-   NextToken TEXT,
-   PRIMARY KEY(Key))
-`, databaseName))
+	statement :=
+		fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s ", databaseName) +
+			"(Key VARCHAR(1024) NOT NULL, " +
+			"Buffer TEXT, " +
+			"NextToken TEXT, " +
+			"PRIMARY KEY(Key))"
+
+	_, err := registry.db.Exec(statement)
 	Fatal(err)
 }
